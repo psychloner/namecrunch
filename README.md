@@ -11,5 +11,5 @@ Example:
 
 Development notes:
 1. For generating an output file, the user is provided an option to first delete a file with the same name. When this option is selected, the deletion happens regardless of successful execution of the script.
-2. A user should have the option to run the script without prompts (single-line command). This would require an output argument (-o?) and an argument passing the naming convention (ex. --firstname.lastname).
+2. A user should have the option to run the script without prompts (single-line command). This would require an output argument (-o?) and an argument passing the naming convention (ex. --firstname.lastname, --initiallastname, etc.).
 3. A user should also be able to provide standard input strings as an option, separated by commas (ex. ./namecrunch -l Jones,Smith)
