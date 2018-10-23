@@ -1,0 +1,174 @@
+#!/bin/bash
+
+#ARGUMENT OPTIONS
+while getopts ":f:l:d:" opt; do
+	case ${opt} in
+	#Firstname
+	f ) FIRST=$OPTARG
+		if [ ! -e $OPTARG ]; then
+			echo "Firstname file does not exist. Try again."
+			exit 1
+		elif [ ! -f $OPTARG ]; then
+			echo "Firstname is not a file (Did you select a directory?)."
+			exit 1
+		fi;;
+	#Lastname
+	l ) LAST=$OPTARG
+		if [ ! -e $OPTARG ]; then
+			echo "Lastname file does not exist. Try again."
+			exit 1
+		elif [ ! -f $OPTARG ]; then
+			echo "Lastname is not a file (Did you select a directory?)."
+			exit 1
+		fi;;
+	#Domain
+	d ) DOMAIN=$OPTARG;;
+	#Invalid arguments
+	\? ) echo "Invalid option for -$OPTARG: [-f for firstname file, -l for lastname file, -d for domain]"
+	exit 1;;
+	: ) echo "Invalid option for -$OPTARG: [-f for firstname file, -l for lastname file, -d for domain]"
+	exit 1;;
+	esac
+done
+shift $((OPTIND -1))
+
+
+#HEADER/WARNING MESSAGE
+printf "
+  _        _______  _______  _______  _______  _______           _        _______
+ ( (    /|(  ___  )(       )(  ____ \(  ____ \(  ____ )|\     /|( (    /|(  ____ \|\     /|
+ |  \  ( || (   ) || () () || (    \/| (    \/| (    )|| )   ( ||  \  ( || (    \/| )   ( |
+ |   \ | || (___) || || || || (__    | |      | (____)|| |   | ||   \ | || |      | (___) |
+ | (\ \) ||  ___  || |(_)| ||  __)   | |      |     __)| |   | || (\ \) || |      |  ___  |
+ | | \   || (   ) || |   | || (      | |      | (\ (   | |   | || | \   || |      | (   ) |
+ | )  \  || )   ( || )   ( || (____/\| (____/\| ) \ \__| (___) || )  \  || (____/\| )   ( |
+ |/    )_)|/     \||/     \|(_______/(_______/|/   \__/(_______)|/    )_)(_______/|/     \|
+
+                                                                  v 1.0 ©2018 James Mariano
+
+******************************************************************************************** 
+Usage: [ -f path/to/firstname ][ -l path/to/lastname][ -d domain.com (appends @domain.com) ]
+WARNING: When using long lists of names, this process can take a significant amount of time.
+********************************************************************************************\n\n"
+
+#OUTPUT
+#User option: output filename.
+output () {
+echo "Name your output file."
+read outputname
+
+#User option: remove any existing file with same name
+if [ -e $outputname ]; then	
+printf "\nFile exists with same name. Delete this file first?"
+	select yn in "Yes" "No"; do
+		case $yn in
+			Yes ) rm $outputname; break;;
+			No ) output; break;;
+		esac
+	done
+fi
+}
+output
+
+
+#USERNAME CONVENTIONS
+#User option: read file and append character to each line
+echo ""
+echo "Choose naming convention."
+	select abcd in "LetterLastname" "Letter.Lastname" "FirstnameLastname" "Firstname.Lastname"; do
+		case $abcd in
+			LetterLastname )
+				#Check for correct arguments.
+				if [ -z $LAST ];
+				then
+					echo ""
+					echo "Lastname file not provided. Specify file path with -l option."
+					exit;
+				fi
+
+				while read i; do
+					for x in {a..z}
+					do
+						if [ $DOMAIN ]; then
+							echo $x$i@$DOMAIN >> $outputname
+						else
+							echo $x$i >> $outputname
+						fi
+					done
+				done < "$LAST"; break;;
+			Letter.Lastname )
+				#Check for correct arguments.
+				if [ -z $LAST ]
+				then
+					echo ""
+					echo "Lastname file not provided. Specify file path with -l option."
+					exit;
+				fi
+	
+				while read i; do
+					for x in {a..z}
+					do
+						if [ $DOMAIN ]; then
+							echo $x.$i@$DOMAIN >> $outputname
+						else
+							echo $x.$i >> $outputname
+						fi
+					done
+				done < "$LAST"; break;;
+			FirstnameLastname )
+				#Check for correct arguments.
+				if [ -z $FIRST ] && [ -z $LAST ]
+				then
+					echo ""
+					echo "Files not provided. Provide paths with -f (Firstname) and -l (Lastname) options."
+					exit;
+				elif [ -z $FIRST ]
+				then
+					echo ""
+					echo "Firstname file not provided. Specify file path with -f option."
+					exit;
+				elif [ -z $LAST ]
+				then
+					echo ""
+					echo "Lastname file not provided. Specify file path with -l option."
+					exit;
+				fi
+	
+				while read i; do
+					while read x; do
+						if [ $DOMAIN ]; then
+							echo $x$i@$DOMAIN >> $outputname
+						else
+							echo $x$i >> $outputname
+						fi
+					done < $FIRST;
+				done < $LAST; break;;
+			Firstname.Lastname )
+				#Check for correct arguments.
+				if [ -z $FIRST ] && [ -z $LAST ]
+				then
+					echo ""
+					echo "Files not provided. Provide paths with -f (Firstname) and -l (Lastname) options."
+					exit;
+				elif [ -z $FIRST ]
+				then
+					echo ""
+					echo "Firstname file not provided. Specify file path with -f option."
+					exit;
+				elif [ -z $LAST ]
+				then
+					echo ""
+					echo "Lastname file not provided. Specify file path with -l option."
+					exit;
+				fi
+				while read i; do
+					while read x; do
+						if [ $DOMAIN ]; then
+							echo $x.$i@$DOMAIN >> $outputname
+						else
+							echo $x.$i >> $outputname
+						fi
+					done < $FIRST;
+				done < $LAST; break;;
+		esac
+	done
